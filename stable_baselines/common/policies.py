@@ -8,7 +8,7 @@ from gym.spaces import Discrete
 
 from stable_baselines.a2c.utils import conv, linear, conv_to_fc, batch_to_seq, seq_to_batch, lstm
 from stable_baselines.common.distributions import make_proba_dist_type, CategoricalProbabilityDistribution, \
-    MultiCategoricalProbabilityDistribution, DiagGaussianProbabilityDistribution, BernoulliProbabilityDistribution
+    MultiCategoricalProbabilityDistribution, DiagGaussianProbabilityDistribution, BernoulliProbabilityDistribution, BetaProbabilityDistribution
 from stable_baselines.common.input import observation_input
 
 
@@ -239,6 +239,8 @@ class ActorCriticPolicy(BasePolicy):
                 self._policy_proba = tf.nn.softmax(self.policy)
             elif isinstance(self.proba_distribution, DiagGaussianProbabilityDistribution):
                 self._policy_proba = [self.proba_distribution.mean, self.proba_distribution.std]
+            elif isinstance(self.proba_distribution, BetaProbabilityDistribution):
+                self._policy_proba = [self.proba_distribution.alpha, self.proba_distribution.beta]
             elif isinstance(self.proba_distribution, BernoulliProbabilityDistribution):
                 self._policy_proba = tf.nn.sigmoid(self.policy)
             elif isinstance(self.proba_distribution, MultiCategoricalProbabilityDistribution):
@@ -365,7 +367,7 @@ class RecurrentActorCriticPolicy(ActorCriticPolicy):
     def states_ph(self):
         """tf.Tensor: placeholder for states, shape (self.n_env, ) + state_shape."""
         return self._states_ph
-    
+
     @abstractmethod
     def value(self, obs, state=None, mask=None):
         """
